@@ -3,7 +3,7 @@ from math import hypot, asin, pi
 from support import import_folder
 
 class Gun(pygame.sprite.Sprite):
-    def __init__(self, pos, surface) -> None:
+    def __init__(self, pos, surface):
         super().__init__()
         self.import_images()
         self.display_surface = surface
@@ -13,7 +13,7 @@ class Gun(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = pos)
 
         self.animation_frame = 0
-        self.animation_speed = 0.6
+        self.animation_speed = 0.5
         self.firing = False
     
     def import_images(self):

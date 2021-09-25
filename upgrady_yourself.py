@@ -3,6 +3,7 @@ import sys
 
 from gun import Gun
 from player import Player
+from enemy import Bird
 from settings import *
 
 pygame.init()
@@ -10,14 +11,14 @@ pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
 clock = pygame.time.Clock()
 
-# pistol = Gun((100, 288), screen)
 player_sprite = Player(screen)
-# gun = pygame.sprite.GroupSingle()
 player = pygame.sprite.GroupSingle()
-# gun.add(pistol)
 player.add(player_sprite)
-# gun.sprite.image = pygame.transform.rotate(gun.sprite.image, 90)
-
+enemies = pygame.sprite.Group()
+e1 = Bird(screen, "Graphics/BlueBird/", {"Flying":[], "Hit":[]})
+e2 = Bird(screen, "Graphics/BlueBird/", {"Flying":[], "Hit":[]})
+enemies.add(e1)
+enemies.add(e2)
 
 while True:
     for event in pygame.event.get():
@@ -26,9 +27,10 @@ while True:
             sys.exit()
     
     screen.fill("black")
-    # gun.draw(screen)
     player.draw(screen)
     player.update()
+    enemies.draw(screen)
+    enemies.update()
 
     pygame.display.update()
     clock.tick(60)

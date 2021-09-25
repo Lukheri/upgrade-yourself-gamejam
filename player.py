@@ -2,7 +2,7 @@ import pygame
 from gun import Gun
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, surface) -> None:
+    def __init__(self, surface):
         super().__init__()
         self.display_surface = surface
 
