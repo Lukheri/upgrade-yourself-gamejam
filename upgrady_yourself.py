@@ -10,12 +10,13 @@ pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
 clock = pygame.time.Clock()
 
-pistol = Gun((100, 288), screen)
+# pistol = Gun((100, 288), screen)
 player_sprite = Player(screen)
-gun = pygame.sprite.GroupSingle()
+# gun = pygame.sprite.GroupSingle()
 player = pygame.sprite.GroupSingle()
-gun.add(pistol)
+# gun.add(pistol)
 player.add(player_sprite)
+# gun.sprite.image = pygame.transform.rotate(gun.sprite.image, 90)
 
 
 while True:
@@ -24,10 +25,10 @@ while True:
             pygame.quit()
             sys.exit()
     
-    screen.fill("grey")
-    gun.draw(screen)
+    screen.fill("black")
+    # gun.draw(screen)
     player.draw(screen)
-
+    player.update()
 
     pygame.display.update()
     clock.tick(60)
