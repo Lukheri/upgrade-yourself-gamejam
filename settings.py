@@ -1,5 +1,5 @@
-screen_width = 1024
-screen_height = 576
+screen_width = 1280
+screen_height = 720
 
 tile_number = 20
 tile_size = 16

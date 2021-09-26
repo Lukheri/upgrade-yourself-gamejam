@@ -22,7 +22,7 @@ class Gun(pygame.sprite.Sprite):
 
         for gun in self.guns.keys():
             full_path = gun_image_path + gun
-            self.guns[gun] = import_folder(full_path)
+            self.guns[gun] = import_folder(full_path, True, (128, 64))
     
     def fire_animation(self):
         if self.firing:
