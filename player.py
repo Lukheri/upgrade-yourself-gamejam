@@ -1,5 +1,6 @@
 import pygame
 from gun import Gun
+from bullet import BulletUpgrade
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, surface):
@@ -13,22 +14,54 @@ class Player(pygame.sprite.Sprite):
         pistol = Gun((90, 225), self.display_surface)
         self.gun = pygame.sprite.GroupSingle()
         self.gun.add(pistol)
+        self.gun_mode = "normal"
+
+        self.bullet_upgrade = pygame.sprite.Group()
+        self.rapid_fire = False
     
     def update_position(self):
         self.rect.center = pygame.mouse.get_pos()
 
     def player_input(self):
+        keys = pygame.key.get_pressed()
+
         if pygame.mouse.get_pressed()[0]:
             if not self.clicking:
                 self.gun.sprite.fire()
-                self.clicking = True
+                if self.gun_mode != "normal":
+                    self.animate_bullet(self.rect.center)
                 
+                if not self.rapid_fire:
+                    self.clicking = True
+
         if not pygame.mouse.get_pressed()[0]:
             self.clicking = False
-    
+
+        if keys[pygame.K_q]:
+            self.gun_mode = "normal"
+            self.rapid_fire = False
+        
+        if keys[pygame.K_w]:
+            self.gun_mode = "bullet2"
+            self.rapid_fire = False
+        
+        if keys[pygame.K_e]:
+            self.gun_mode = "bullet3"
+            self.rapid_fire = True
+
+    def animate_bullet(self, pos):
+        if self.gun_mode == "bullet2":
+            self.bullet_upgrade.add(BulletUpgrade(pos, self.gun_mode))
+
+        if self.gun_mode == "bullet3":
+            self.bullet_upgrade.add(BulletUpgrade(pos, self.gun_mode))
+
     def update(self):
         self.gun.update()
         self.gun.draw(self.display_surface)
+
+        self.bullet_upgrade.draw(self.display_surface)
+        self.bullet_upgrade.update()
 
         self.player_input()
         self.update_position()

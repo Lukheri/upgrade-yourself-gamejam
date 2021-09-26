@@ -30,10 +30,11 @@ class Game:
     def check_collision(self):
         player = self.player.sprite
         for enemy in self.enemies.sprites():
-            if enemy.rect.colliderect(player.rect) and player.clicking and enemy.status == "Flying":
+            if enemy.rect.colliderect(player.rect) and pygame.mouse.get_pressed()[0] and enemy.status == "Flying":
                 if not self.clicking:
                     enemy.die()
-                    self.clicking = True
+                    if not player.rapid_fire:
+                        self.clicking = True
         
         if not player.clicking:
             self.clicking = False
