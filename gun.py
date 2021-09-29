@@ -6,33 +6,44 @@ class Gun(pygame.sprite.Sprite):
     def __init__(self, pos, surface):
         super().__init__()
         self.import_images()
+        self.scale_images()
         self.display_surface = surface
+        self.gun_type = "Pistol"
 
-        self.orig_image = self.guns["Pistol"][0]
-        self.image = self.guns["Pistol"][0]
+        self.orig_image = self.guns[self.gun_type][0]
+        self.image = self.guns[self.gun_type][0]
         self.rect = self.image.get_rect(center = pos)
 
         self.animation_frame = 0
         self.animation_speed = 0.5
         self.firing = False
     
+    def scale_images(self):
+        for i, image in enumerate(self.guns["Pistol"]):
+            image = pygame.transform.scale(image, (128,64))
+            self.guns["Pistol"][i] = image
+        
+        for i, image in enumerate(self.guns["Shotgun"]):
+            image = pygame.transform.scale(image, (240,48))
+            self.guns["Shotgun"][i] = image
+
     def import_images(self):
         gun_image_path = "Graphics/Guns/"
-        self.guns = {"Pistol":[]}
+        self.guns = {"Pistol":[], "Shotgun":[]}
 
         for gun in self.guns.keys():
             full_path = gun_image_path + gun
-            self.guns[gun] = import_folder(full_path, True, (128, 64))
+            self.guns[gun] = import_folder(full_path)
     
     def fire_animation(self):
         if self.firing:
             self.animation_frame += self.animation_speed
 
-            if self.animation_frame >= len(self.guns["Pistol"]):
+            if self.animation_frame >= len(self.guns[self.gun_type]):
                 self.animation_frame = 0
                 self.firing = False
 
-            self.orig_image = self.guns["Pistol"][int(self.animation_frame)]
+            self.orig_image = self.guns[self.gun_type][int(self.animation_frame)]
 
     def fire(self):
         self.firing = True

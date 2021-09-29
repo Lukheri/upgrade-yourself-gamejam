@@ -12,9 +12,12 @@ class Game:
         self.setup_player()
 
         self.enemies = pygame.sprite.Group()
-        self.enemy_respawn_rate = 30
+        self.enemy_respawn_rate = 50
         self.enemy_respawn_current = 0
         self.clicking = False
+
+        self.score = 0
+        self.font = pygame.font.Font("freesansbold.ttf", 256)
 
     def spawn_enemy(self):
         if self.enemy_respawn_current >= self.enemy_respawn_rate:
@@ -33,13 +36,38 @@ class Game:
             if enemy.rect.colliderect(player.rect) and pygame.mouse.get_pressed()[0] and enemy.status == "Flying":
                 if not self.clicking:
                     enemy.die()
-                    if not player.rapid_fire:
-                        self.clicking = True
+                    self.score += 1
+                    self.clicking = True
+
+        if not player.clicking:
+            self.clicking = False
+    
+    def player_miss(self):
+        player = self.player.sprite
+        for enemy in self.enemies.sprites():
+            if not enemy.rect.colliderect(player.rect) and pygame.mouse.get_pressed()[0]:
+                if not self.clicking:
+                    self.enemies.add(Bird(self.display_surface, "Graphics/BlueBird/", {"Flying":[], "Hit":[]}))
+                    self.clicking = True
         
         if not player.clicking:
             self.clicking = False
+    
+    def show_score(self):
+        score = self.font.render(str(self.score), True, "white")
+        self.display_surface.blit(score, (462, 182))
+    
+    def change_gun(self):
+        player = self.player.sprite
+        gun = self.player.sprite.gun.sprite
+        if self.score == 10:
+            gun.gun_type = "Shotgun"
+            gun.rect.center = (140, 225)
+            player.gun_mode = "bullet3"
 
     def run(self):
+        self.show_score()
+
         self.enemies.draw(self.display_surface)
         self.enemies.update()
         self.spawn_enemy()
@@ -48,6 +76,8 @@ class Game:
         self.player.update()
 
         self.check_collision()
+        self.player_miss()
+        self.change_gun()
 
 pygame.init()
 

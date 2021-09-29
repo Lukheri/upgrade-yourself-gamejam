@@ -10,7 +10,7 @@ class Enemy(pygame.sprite.Sprite):
         self.frame_index = 0
         self.animation_speed = 0.4
         self.direction_x = 4
-        self.direction_y = choice([-5, 5, 0, 0])
+        self.direction_y = choice([-2, 2, 0, 0])
     
     def import_images(self, image_path, animation_dict):
         self.animations = animation_dict
@@ -26,7 +26,7 @@ class Bird(Enemy):
         self.status = "Flying"
 
         self.image = self.animations[self.status][self.frame_index]
-        self.rect = self.image.get_rect(center = (randint(1400, 1600), randint(0, 600)))
+        self.rect = self.image.get_rect(center = (randint(1400, 1600), randint(64, 560)))
 
     def animate(self):
         self.frame_index += self.animation_speed
@@ -46,11 +46,15 @@ class Bird(Enemy):
     def move(self):
         self.rect.x -= self.direction_x
         self.rect.y += self.direction_y
-        if self.rect.y <= 50:
-            self.direction_y = 5
+        # if self.rect.y <= 50:
+        #     self.direction_y = 1
         
-        if self.rect.y >= 400:
-            self.direction_y = -5
+        # if self.rect.y >= 400:
+        #     self.direction_y = -1
+
+        if self.rect.y <= 32 or self.rect.y >= 600:
+            self.direction_y *= -1
+
     
     def update(self):
         self.animate()

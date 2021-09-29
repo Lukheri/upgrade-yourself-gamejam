@@ -17,7 +17,6 @@ class Player(pygame.sprite.Sprite):
         self.gun_mode = "normal"
 
         self.bullet_upgrade = pygame.sprite.Group()
-        self.rapid_fire = False
     
     def update_position(self):
         self.rect.center = pygame.mouse.get_pos()
@@ -31,23 +30,19 @@ class Player(pygame.sprite.Sprite):
                 if self.gun_mode != "normal":
                     self.animate_bullet(self.rect.center)
                 
-                if not self.rapid_fire:
-                    self.clicking = True
+                self.clicking = True
 
         if not pygame.mouse.get_pressed()[0]:
             self.clicking = False
 
         if keys[pygame.K_q]:
             self.gun_mode = "normal"
-            self.rapid_fire = False
         
         if keys[pygame.K_w]:
             self.gun_mode = "bullet2"
-            self.rapid_fire = False
         
         if keys[pygame.K_e]:
             self.gun_mode = "bullet3"
-            self.rapid_fire = True
 
     def animate_bullet(self, pos):
         if self.gun_mode == "bullet2":
