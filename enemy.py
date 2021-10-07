@@ -9,8 +9,6 @@ class Enemy(pygame.sprite.Sprite):
         self.display_surface = surface
         self.frame_index = 0
         self.animation_speed = 0.4
-        self.direction_x = 4
-        self.direction_y = choice([-2, 2, 0, 0])
     
     def import_images(self, image_path, animation_dict, size):
         self.animations = animation_dict
@@ -37,7 +35,7 @@ class Enemy(pygame.sprite.Sprite):
 class Bird(Enemy):
     def __init__(self, surface, image_path, animation_dict, size):
         super().__init__(surface, image_path, animation_dict, size)
-        self.direction_x = 3
+        self.direction_x = 5
         self.direction_y = choice([-3, 3, 0, 0])
 
         self.status = "Flying"
@@ -59,13 +57,29 @@ class Bird(Enemy):
 class Ghost(Enemy):
     def __init__(self, surface, image_path, animation_dict, size):
         super().__init__(surface, image_path, animation_dict, size)
-        self.status = "Ghosting"
+        self.status = "Flying"
 
         self.image = self.animations[self.status][self.frame_index]
         self.rect = self.image.get_rect(center = (randint(1400, 1600), randint(64, 560)))
 
-        self.ghost_cd = 50
+        self.ghost_cd = choice([40, 50, 60])
         self.ghost_timer = 0
+        self.ghost_timer_speed = 0.5
+        self.ghost_duration = 0
+
+        self.direction_x = choice([3, 3, 4, 5])
+        self.direction_y = choice([0, 0, 3, 4])
+    
+    def animate(self):
+        self.frame_index += self.animation_speed
+        if self.frame_index >= len(self.animations[self.status]):
+            self.frame_index = 0
+            if self.status == "Hit":
+                self.kill()
+            if self.status == "Ghosting" and self.ghost_duration >= choice([2, 2, 3, 4]):
+                self.status = "Flying"
+        
+        self.image = self.animations[self.status][int(self.frame_index)]
     
     def move(self):
         self.rect.x -= self.direction_x
@@ -75,14 +89,13 @@ class Ghost(Enemy):
             self.direction_y *= -1
 
     def going_ghost(self):
-        self.ghost_timer += 1
+        self.ghost_timer += self.ghost_timer_speed
         if self.ghost_timer >= self.ghost_cd:
             self.ghost_timer = 0
+            self.ghost_duration += 1
             self.status = "Ghosting"
-        pass
 
     def update(self):
-        print(self.animations["Ghosting"])
         self.animate()
         self.move()
-        # self.going_ghost()
+        self.going_ghost()

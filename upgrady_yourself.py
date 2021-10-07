@@ -2,7 +2,7 @@ import pygame
 import sys
 from random import choice
 from player import Player
-from enemy import Bird
+from enemy import Bird, Ghost
 from settings import *
 
 class Game:
@@ -15,6 +15,7 @@ class Game:
         self.enemies = pygame.sprite.Group()
         self.enemy_respawn_rate = 50
         self.enemy_respawn_current = 0
+
         self.bird = "Graphics/BlueBird/", {"Flying":[], "Hit":[]}
         self.ghost = "Graphics/Ghost/", {"Flying":[], "Hit":[], "Ghosting":[]}
 
@@ -28,29 +29,48 @@ class Game:
         self.player.add(player_sprite)    
 
     def spawn_enemy(self):
-        if self.score > 10:
+        if self.score > 50:
             enemies = choice([self.bird, self.ghost])
             
         else:
             enemies = self.bird
 
-        if enemies == self.bird:
-            size = (64, 64)
-        else:
-            size = (88, 60)
-
         if self.enemy_respawn_current >= self.enemy_respawn_rate:
             self.enemy_respawn_current = 0
-            self.enemies.add(Bird(self.display_surface, *enemies, size))
+            if enemies == self.bird:
+                self.enemies.add(Bird(self.display_surface, *enemies, (64, 64)))
+            else:
+                self.enemies.add(Ghost(self.display_surface, *enemies, (88, 60)))
         else:
             self.enemy_respawn_current += 1
+        if self.enemy_respawn_rate >= 25:
+            self.enemy_respawn_rate -= 0.02
+
+    def player_miss(self):
+        if self.score > 50:
+            enemies = choice([self.bird, self.ghost])
+        else:
+            enemies = self.bird
+
+        player = self.player.sprite
+        for enemy in self.enemies.sprites():
+            if not enemy.rect.colliderect(player.rect) and pygame.mouse.get_pressed()[0]:
+                if not self.clicking:
+                    if enemies == self.bird:
+                        self.enemies.add(Bird(self.display_surface, *enemies, (64, 64)))
+                    else:
+                        self.enemies.add(Ghost(self.display_surface, *enemies, (88, 60)))
+
+                    self.clicking = True
+        
+        if not player.clicking:
+            self.clicking = False
 
     def pistol_collision(self):
         player = self.player.sprite
         for enemy in self.enemies.sprites():
             if enemy.rect.colliderect(player.rect) and pygame.mouse.get_pressed()[0] and enemy.status == "Flying":
                 if not self.clicking:
-                    print(enemy.status)
                     enemy.die()
                     self.score += 1
                     self.clicking = True
@@ -67,27 +87,6 @@ class Game:
                     enemy.die()
                     self.score += 1
 
-    def player_miss(self):
-        if self.score > 10:
-            enemies = choice([self.bird, self.ghost])
-        else:
-            enemies = self.bird
-        
-        if enemies == self.bird:
-            size = (64, 64)
-        else:
-            size = (88, 60)
-
-        player = self.player.sprite
-        for enemy in self.enemies.sprites():
-            if not enemy.rect.colliderect(player.rect) and pygame.mouse.get_pressed()[0]:
-                if not self.clicking:
-                    self.enemies.add(Bird(self.display_surface, *enemies, size))
-                    self.clicking = True
-        
-        if not player.clicking:
-            self.clicking = False
-    
     def show_score(self):
         score = self.font.render(str(self.score), True, "white")
         self.display_surface.blit(score, (462, 182))
@@ -95,10 +94,16 @@ class Game:
     def change_gun(self):
         player = self.player.sprite
         gun = self.player.sprite.gun.sprite
-        if self.score == 10:
+        if self.score == 75:
             gun.gun_type = "Shotgun"
             gun.rect.center = (140, 225)
             player.gun_mode = "bullet3"
+
+    def enemy_pass(self):
+        for enemy in self.enemies.sprites():
+            if enemy.rect.x < -30:
+                print("lost")
+                enemy.kill()
 
     def run(self):
         gun = self.player.sprite.gun.sprite
@@ -118,6 +123,7 @@ class Game:
         if gun.gun_type == "Shotgun":
             self.shotgun_collision()
 
+        self.enemy_pass()
         self.player_miss()
         self.change_gun()
 
