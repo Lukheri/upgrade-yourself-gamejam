@@ -3,14 +3,23 @@ import sys
 from random import choice
 from player import Player
 from enemy import Bird, Ghost
+from ui import Background_Tile, UI
 from settings import *
 
 class Game:
     def __init__(self, surface):
         self.display_surface = surface
+        self.bg_speed = -2
+        self.bg = pygame.sprite.Group()
+        self.bg_size = 64
+        self.setup_bg()
+
+        self.ui = UI(surface)
+        self.game_active = True
 
         self.player = pygame.sprite.GroupSingle()
         self.setup_player()
+        self.shield = True
 
         self.enemies = pygame.sprite.Group()
         self.enemy_respawn_rate = 50
@@ -22,49 +31,65 @@ class Game:
         self.clicking = False
 
         self.score = 0
-        self.font = pygame.font.Font("freesansbold.ttf", 256)
 
     def setup_player(self):
         player_sprite = Player(self.display_surface)
         self.player.add(player_sprite)    
 
-    def spawn_enemy(self):
-        if self.score > 50:
-            enemies = choice([self.bird, self.ghost])
-            
-        else:
-            enemies = self.bird
+    def setup_bg(self):
+        for col in range((screen_height//self.bg_size)):
+            for row in range((screen_width//self.bg_size)+1):
+                self.bg.add(Background_Tile(self.display_surface, (row*self.bg_size, col*self.bg_size), self.bg_speed))
+    
+    def add_bg(self):
+        for col in range((screen_height//self.bg_size)):
+            self.bg.add(Background_Tile(self.display_surface, (1280, col*self.bg_size), self.bg_speed))
 
-        if self.enemy_respawn_current >= self.enemy_respawn_rate:
-            self.enemy_respawn_current = 0
-            if enemies == self.bird:
-                self.enemies.add(Bird(self.display_surface, *enemies, (64, 64)))
+    def spawn_enemy(self):
+        if self.game_active:
+            if self.score > 50:
+                enemies = choice([self.bird, self.ghost])
+                
             else:
-                self.enemies.add(Ghost(self.display_surface, *enemies, (88, 60)))
-        else:
-            self.enemy_respawn_current += 1
-        if self.enemy_respawn_rate >= 25:
-            self.enemy_respawn_rate -= 0.02
+                enemies = self.bird
+
+            if self.enemy_respawn_current >= self.enemy_respawn_rate:
+                self.enemy_respawn_current = 0
+                if enemies == self.bird:
+                    self.enemies.add(Bird(self.display_surface, *enemies, (64, 64)))
+                else:
+                    self.enemies.add(Ghost(self.display_surface, *enemies, (88, 60)))
+            else:
+                self.enemy_respawn_current += 1
+            if self.enemy_respawn_rate >= 30:
+                self.enemy_respawn_rate -= 0.01
 
     def player_miss(self):
-        if self.score > 50:
-            enemies = choice([self.bird, self.ghost])
-        else:
-            enemies = self.bird
+        if self.game_active:
+            if self.score > 50:
+                enemies = choice([self.bird, self.ghost])
+            else:
+                enemies = self.bird
 
-        player = self.player.sprite
-        for enemy in self.enemies.sprites():
-            if not enemy.rect.colliderect(player.rect) and pygame.mouse.get_pressed()[0]:
-                if not self.clicking:
-                    if enemies == self.bird:
-                        self.enemies.add(Bird(self.display_surface, *enemies, (64, 64)))
-                    else:
-                        self.enemies.add(Ghost(self.display_surface, *enemies, (88, 60)))
+            player = self.player.sprite
+            for enemy in self.enemies.sprites():
+                if not enemy.rect.colliderect(player.rect) and pygame.mouse.get_pressed()[0]:
+                    if not self.clicking:
+                        if enemies == self.bird:
+                            self.enemies.add(Bird(self.display_surface, *enemies, (64, 64)))
+                        else:
+                            self.enemies.add(Ghost(self.display_surface, *enemies, (88, 60)))
 
-                    self.clicking = True
-        
-        if not player.clicking:
-            self.clicking = False
+                        if self.score > 75:
+                            if enemies == self.bird:
+                                self.enemies.add(Bird(self.display_surface, *enemies, (64, 64)))
+                            else:
+                                self.enemies.add(Ghost(self.display_surface, *enemies, (88, 60)))
+
+                        self.clicking = True
+            
+            if not player.clicking:
+                self.clicking = False
 
     def pistol_collision(self):
         player = self.player.sprite
@@ -87,28 +112,33 @@ class Game:
                     enemy.die()
                     self.score += 1
 
-    def show_score(self):
-        score = self.font.render(str(self.score), True, "white")
-        self.display_surface.blit(score, (462, 182))
-    
     def change_gun(self):
         player = self.player.sprite
         gun = self.player.sprite.gun.sprite
         if self.score == 75:
             gun.gun_type = "Shotgun"
-            gun.rect.center = (140, 225)
+            gun.rect.center = (140, 384)
             player.gun_mode = "bullet3"
+    
+    def kill_all_enemies(self):
+        for dead_enemy in self.enemies.sprites():
+            dead_enemy.die()
 
     def enemy_pass(self):
         for enemy in self.enemies.sprites():
             if enemy.rect.x < -30:
-                print("lost")
-                enemy.kill()
-
+                self.kill_all_enemies()
+                self.game_active = False
+    # Might add shield mechanic in the future, might not, who knows.
+    # def give_shield(self):
+    #     if self.score % 150 == 0 and self.score > 0:
+    #         self.shield = True
+                        
     def run(self):
         gun = self.player.sprite.gun.sprite
-        
-        self.show_score()
+        self.bg.draw(self.display_surface)
+        self.bg.update()
+        self.ui.show_score(self.score)
 
         self.enemies.draw(self.display_surface)
         self.enemies.update()

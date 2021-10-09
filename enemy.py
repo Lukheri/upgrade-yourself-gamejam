@@ -90,7 +90,7 @@ class Ghost(Enemy):
 
     def going_ghost(self):
         self.ghost_timer += self.ghost_timer_speed
-        if self.ghost_timer >= self.ghost_cd:
+        if self.ghost_timer >= self.ghost_cd and self.direction_x > 0:
             self.ghost_timer = 0
             self.ghost_duration += 1
             self.status = "Ghosting"

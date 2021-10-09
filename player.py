@@ -7,11 +7,11 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.display_surface = surface
 
-        self.image = pygame.image.load("Graphics/target.png")
+        self.image = pygame.image.load("Graphics/target.png").convert_alpha()
         self.rect = self.image.get_rect(center = pygame.mouse.get_pos())
         self.clicking = False
 
-        pistol = Gun((90, 225), self.display_surface)
+        pistol = Gun((90, 384), self.display_surface)
         self.gun = pygame.sprite.GroupSingle()
         self.gun.add(pistol)
         self.gun_mode = "normal"
@@ -22,8 +22,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.center = pygame.mouse.get_pos()
 
     def player_input(self):
-        keys = pygame.key.get_pressed()
-
         if pygame.mouse.get_pressed()[0]:
             if not self.clicking:
                 self.gun.sprite.fire()
@@ -34,15 +32,6 @@ class Player(pygame.sprite.Sprite):
 
         if not pygame.mouse.get_pressed()[0]:
             self.clicking = False
-
-        if keys[pygame.K_q]:
-            self.gun_mode = "normal"
-        
-        if keys[pygame.K_w]:
-            self.gun_mode = "bullet2"
-        
-        if keys[pygame.K_e]:
-            self.gun_mode = "bullet3"
 
     def animate_bullet(self, pos):
         if self.gun_mode == "bullet2":
