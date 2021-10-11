@@ -1,6 +1,4 @@
 from os import walk
-from csv import reader
-from settings import tile_size
 import pygame
 
 def import_folder(path, resize = False, size = (32, 32)):
