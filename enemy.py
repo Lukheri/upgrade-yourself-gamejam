@@ -9,6 +9,8 @@ class Enemy(pygame.sprite.Sprite):
         self.display_surface = surface
         self.frame_index = 0
         self.animation_speed = 0.4
+        self.hit_sound = pygame.mixer.Sound("Music/hit.wav")
+        self.hit_sound.set_volume(0.3)
     
     def import_images(self, image_path, animation_dict, size):
         self.animations = animation_dict
@@ -17,11 +19,13 @@ class Enemy(pygame.sprite.Sprite):
             full_path = image_path + animation
             self.animations[animation] = import_folder(full_path, True, size)
     
-    def animate(self):
+    def animate(self, sfx):
         self.frame_index += self.animation_speed
         if self.frame_index >= len(self.animations[self.status]):
             self.frame_index = 0
             if self.status == "Hit":
+                if sfx:
+                    self.hit_sound.play()
                 self.kill()
         
         self.image = self.animations[self.status][int(self.frame_index)]
@@ -50,8 +54,8 @@ class Bird(Enemy):
         if self.rect.y <= 32 or self.rect.y >= 600:
             self.direction_y *= -1
     
-    def update(self):
-        self.animate()
+    def update(self, sfx):
+        self.animate(sfx)
         self.move()
 
 class Ghost(Enemy):
@@ -70,11 +74,13 @@ class Ghost(Enemy):
         self.direction_x = choice([3, 3, 4, 5])
         self.direction_y = choice([0, 0, 3, 4])
     
-    def animate(self):
+    def animate(self, sfx):
         self.frame_index += self.animation_speed
         if self.frame_index >= len(self.animations[self.status]):
             self.frame_index = 0
             if self.status == "Hit":
+                if sfx:
+                    self.hit_sound.play()
                 self.kill()
             if self.status == "Ghosting" and self.ghost_duration >= choice([2, 2, 3, 4]):
                 self.status = "Flying"
@@ -95,7 +101,7 @@ class Ghost(Enemy):
             self.ghost_duration += 1
             self.status = "Ghosting"
 
-    def update(self):
-        self.animate()
+    def update(self, sfx):
+        self.animate(sfx)
         self.move()
         self.going_ghost()

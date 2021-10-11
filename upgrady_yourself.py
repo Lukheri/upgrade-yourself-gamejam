@@ -15,7 +15,9 @@ class Game:
         self.setup_bg()
 
         self.ui = UI(surface)
-        self.game_active = True
+        self.game_active = False
+        self.lose_sound = pygame.mixer.Sound("Music/lose.mp3")
+        self.lose_sound.set_volume(0.4)
 
         self.player = pygame.sprite.GroupSingle()
         self.setup_player()
@@ -31,6 +33,7 @@ class Game:
         self.clicking = False
 
         self.score = 0
+        self.highscore = 0
 
     def setup_player(self):
         player_sprite = Player(self.display_surface)
@@ -44,6 +47,21 @@ class Game:
     def add_bg(self):
         for col in range((screen_height//self.bg_size)):
             self.bg.add(Background_Tile(self.display_surface, (1280, col*self.bg_size), self.bg_speed))
+
+    def play_game(self):
+        if self.ui.play_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+            self.game_active = True
+
+    def reset(self):
+        player = self.player.sprite
+        gun = self.player.sprite.gun.sprite
+        gun.rect.center = (90, 384)
+        gun.gun_type = "Pistol"
+        player.gun_mode = "normal"
+        self.score = 0
+        self.enemy_respawn_rate = 50
+        self.enemy_respawn_current = 0
+        self.ui.music_playing = False
 
     def spawn_enemy(self):
         if self.game_active:
@@ -123,12 +141,20 @@ class Game:
     def kill_all_enemies(self):
         for dead_enemy in self.enemies.sprites():
             dead_enemy.die()
+    
+    def check_highscore(self):
+        if self.score > self.highscore:
+            self.highscore = self.score
 
     def enemy_pass(self):
         for enemy in self.enemies.sprites():
             if enemy.rect.x < -30:
                 self.kill_all_enemies()
+                self.reset()
+                self.ui.bg_music.stop()
+                self.lose_sound.play()
                 self.game_active = False
+
     # Might add shield mechanic in the future, might not, who knows.
     # def give_shield(self):
     #     if self.score % 150 == 0 and self.score > 0:
@@ -138,14 +164,14 @@ class Game:
         gun = self.player.sprite.gun.sprite
         self.bg.draw(self.display_surface)
         self.bg.update()
-        self.ui.show_score(self.score)
+        self.ui.update(self.score, self.highscore, self.game_active)
 
         self.enemies.draw(self.display_surface)
-        self.enemies.update()
+        self.enemies.update(self.ui.sfx)
         self.spawn_enemy()
 
         self.player.draw(self.display_surface)
-        self.player.update()
+        self.player.update(self.ui.sfx)
 
         if gun.gun_type == "Pistol":
             self.pistol_collision()
@@ -153,9 +179,11 @@ class Game:
         if gun.gun_type == "Shotgun":
             self.shotgun_collision()
 
+        self.play_game()
         self.enemy_pass()
         self.player_miss()
         self.change_gun()
+        self.check_highscore()
 
 pygame.init()
 
